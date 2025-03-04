@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Agent - Financial Advisor</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="/static/styles.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8" x-data="financialApp()">
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold text-center text-blue-600">Budget Agent</h1>
+            <p class="text-center text-gray-600">Your AI-Powered Financial Advisor</p>
+        </header>
+
+        <!-- API Key Warning -->
+        <div x-show="apiKeyMissing" class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6">
+            <p class="font-bold">API Key Missing</p>
+            <p>Please set your OpenAI API key in the .env file to use this application.</p>
+            <p class="text-sm mt-2">OPENAI_API_KEY=your_actual_api_key_here</p>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4" x-show="!result">Enter Your Financial Information</h2>
+            
+            <div x-show="!isLoading && !result" class="space-y-6">
+                <!-- Income Section -->
+                <div>
+                    <h3 class="text-lg font-medium mb-2">Monthly Income</h3>
+                    <div class="flex items-center">
+                        <span class="text-gray-500 mr-2">$</span>
+                        <input type="number" x-model="income" class="form-input rounded border-gray-300 w-full" placeholder="5000">
+                    </div>
+                </div>
+
+                <!-- Expenses Section -->
+                <div>
+                    <h3 class="text-lg font-medium mb-2">Monthly Expenses</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="flex items-center">
+                            <span class="text-gray-500 mr-2 w-24">Rent:</span>
+                            <span class="text-gray-500 mr-1">$</span>
+                            <input type="number" x-model="expenses.rent" class="form-input rounded border-gray-300 w-full" placeholder="1500">
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-gray-500 mr-2 w-24">Utilities:</span>
+                            <span class="text-gray-500 mr-1">$</span>
+                            <input type="number" x-model="expenses.utilities" class="form-input rounded border-gray-300 w-full" placeholder="300">
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-gray-500 mr-2 w-24">Groceries:</span>
+                            <span class="text-gray-500 mr-1">$</span>
+                            <input type="number" x-model="expenses.groceries" class="form-input rounded border-gray-300 w-full" placeholder="400">
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-gray-500 mr-2 w-24">Transport:</span>
+                            <span class="text-gray-500 mr-1">$</span>
+                            <input type="number" x-model="expenses.transportation" class="form-input rounded border-gray-300 w-full" placeholder="200">
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-gray-500 mr-2 w-24">Entertainment:</span>
+                            <span class="text-gray-500 mr-1">$</span>
+                            <input type="number" x-model="expenses.entertainment" class="form-input rounded border-gray-300 w-full" placeholder="150">
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-gray-500 mr-2 w-24">Other:</span>
+                            <span class="text-gray-500 mr-1">$</span>
+                            <input type="number" x-model="expenses.other" class="form-input rounded border-gray-300 w-full" placeholder="450">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Debts Section -->
+                <div>
+                    <h3 class="text-lg font-medium mb-2">Debts</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="font-medium">Credit Card</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="flex items-center">
+                                    <span class="text-gray-500 mr-2 w-24">Balance:</span>
+                                    <span class="text-gray-500 mr-1">$</span>
+                                    <input type="number" x-model="debts.credit_card.balance" class="form-input rounded border-gray-300 w-full" placeholder="2000">
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="text-gray-500 mr-2 w-24">Interest Rate:</span>
+                                    <input type="number" x-model="debts.credit_card.interest_rate" class="form-input rounded border-gray-300 w-full" placeholder="18">
+                                    <span class="text-gray-500 ml-1">%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="font-medium">Student Loan</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="flex items-center">
+                                    <span class="text-gray-500 mr-2 w-24">Balance:</span>
+                                    <span class="text-gray-500 mr-1">$</span>
+                                    <input type="number" x-model="debts.student_loan.balance" class="form-input rounded border-gray-300 w-full" placeholder="15000">
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="text-gray-500 mr-2 w-24">Interest Rate:</span>
+                                    <input type="number" x-model="debts.student_loan.interest_rate" class="form-input rounded border-gray-300 w-full" placeholder="4.5">
+                                    <span class="text-gray-500 ml-1">%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Savings Goal -->
+                <div>
+                    <h3 class="text-lg font-medium mb-2">Monthly Savings Goal</h3>
+                    <div class="flex items-center">
+                        <span class="text-gray-500 mr-2">$</span>
+                        <input type="number" x-model="savings_goal" class="form-input rounded border-gray-300 w-full" placeholder="500">
+                    </div>
+                </div>
+
+                <button 
+                    @click="analyzeFinances" 
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                    :disabled="apiKeyMissing"
+                >
+                    Analyze My Finances
+                </button>
+            </div>
+
+            <!-- Loading State -->
+            <div x-show="isLoading" class="text-center py-12">
+                <svg class="animate-spin h-10 w-10 text-blue-600 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p class="text-gray-600">Our AI agents are analyzing your financial data...</p>
+                <p class="text-gray-500 text-sm mt-2">This may take a minute or two.</p>
+            </div>
+
+            <!-- Error Message -->
+            <div x-show="error" class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 my-4">
+                <p class="font-bold">Error</p>
+                <p x-text="error"></p>
+                <button 
+                    @click="error = null" 
+                    class="mt-2 bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded focus:outline-none focus:shadow-outline text-sm"
+                >
+                    Dismiss
+                </button>
+            </div>
+
+            <!-- Results Section -->
+            <div x-show="result" class="space-y-6">
+                <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-4">
+                    <p class="text-green-700">Your financial analysis is complete!</p>
+                </div>
+
+                <div class="prose max-w-none">
+                    <div>
+                        <div class="mb-6">
+                            <h3 class="text-xl font-semibold mb-3">Financial Analysis</h3>
+                            <div class="bg-gray-50 p-4 rounded text-sm whitespace-pre-wrap" x-text="budgetAnalysis"></div>
+                        </div>
+                        
+                        <button 
+                            @click="resetForm" 
+                            class="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                        >
+                            Start New Analysis
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function financialApp() {
+            return {
+                income: 5000,
+                expenses: {
+                    rent: 1500,
+                    utilities: 300,
+                    groceries: 400,
+                    transportation: 200,
+                    entertainment: 150,
+                    other: 450
+                },
+                debts: {
+                    credit_card: {
+                        balance: 2000,
+                        interest_rate: 18
+                    },
+                    student_loan: {
+                        balance: 15000,
+                        interest_rate: 4.5
+                    }
+                },
+                savings_goal: 500,
+                isLoading: false,
+                result: null,
+                budgetAnalysis: null,
+                investmentStrategy: null,
+                debtManagementPlan: null,
+                error: null,
+                apiKeyMissing: false,
+                
+                init() {
+                    // Check API key status on page load
+                    fetch('/api-key-status')
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'missing') {
+                                this.apiKeyMissing = true;
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error checking API key status:', error);
+                        });
+                },
+                
+                analyzeFinances() {
+                    this.isLoading = true;
+                    this.error = null;
+                    
+                    // Convert interest rates from percentages to decimals
+                    const data = {
+                        income: parseFloat(this.income),
+                        expenses: {
+                            rent: parseFloat(this.expenses.rent),
+                            utilities: parseFloat(this.expenses.utilities),
+                            groceries: parseFloat(this.expenses.groceries),
+                            transportation: parseFloat(this.expenses.transportation),
+                            entertainment: parseFloat(this.expenses.entertainment),
+                            other: parseFloat(this.expenses.other)
+                        },
+                        debts: {
+                            credit_card: {
+                                balance: parseFloat(this.debts.credit_card.balance),
+                                interest_rate: parseFloat(this.debts.credit_card.interest_rate) / 100
+                            },
+                            student_loan: {
+                                balance: parseFloat(this.debts.student_loan.balance),
+                                interest_rate: parseFloat(this.debts.student_loan.interest_rate) / 100
+                            }
+                        },
+                        savings_goal: parseFloat(this.savings_goal)
+                    };
+                    
+                    fetch('/analyze', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(data)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        this.isLoading = false;
+                        if (data.success) {
+                            try {
+                                console.log("API Response:", data.result);
+                                
+                                // Store the full result
+                                this.result = true; // Just set to true to show the results section
+                                
+                                // Make sure data.result is a string
+                                const resultText = String(data.result);
+                                
+                                // Extract the final answer
+                                const finalAnswerIndex = resultText.indexOf("## Final Answer:");
+                                if (finalAnswerIndex !== -1) {
+                                    this.budgetAnalysis = resultText.substring(finalAnswerIndex + 16).trim();
+                                } else {
+                                    // If we can't find the final answer marker, just use the whole text
+                                    this.budgetAnalysis = resultText;
+                                }
+                                
+                                // Debug
+                                console.log("Financial Analysis:", this.budgetAnalysis);
+                                
+                            } catch (error) {
+                                console.error('Error parsing result:', error);
+                                this.result = true;
+                                this.budgetAnalysis = String(data.result);
+                            }
+                        } else {
+                            this.error = data.error || 'An unknown error occurred';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        this.isLoading = false;
+                        this.error = 'An error occurred while analyzing your finances. Please try again.';
+                    });
+                },
+                
+                resetForm() {
+                    this.result = null;
+                    this.budgetAnalysis = null;
+                    this.error = null;
+                }
+            }
+        }
+    </script>
+</body>
+</html> 

@@ -1,0 +1,41 @@
+/* Additional styles for Budget Agent */
+
+.form-input {
+    padding: 0.5rem;
+    border-width: 1px;
+    border-radius: 0.25rem;
+}
+
+.form-input:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    border-color: #3b82f6;
+}
+
+/* Custom styling for the results section */
+pre {
+    font-family: 'Courier New', Courier, monospace;
+    line-height: 1.5;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
+
+/* Animation for loading state */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+} 
