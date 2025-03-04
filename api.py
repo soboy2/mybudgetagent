@@ -1,37 +1,21 @@
-from fastapi import FastAPI, Request, Form, HTTPException
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import Dict, Any, Optional
-import uvicorn
+from typing import Dict
 import os
-from dotenv import load_dotenv
-import traceback
+import openai
 
-# Load environment variables
-load_dotenv()
+app = FastAPI()
 
-app = FastAPI(title="Budget Agent API")
-
-# Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins
-    allow_credentials=True,
-    allow_methods=["*"],  # Allows all methods
-    allow_headers=["*"],  # Allows all headers
-)
-
-# Create templates directory
-os.makedirs("templates", exist_ok=True)
-templates = Jinja2Templates(directory="templates")
-
-# Create static directory
-os.makedirs("static", exist_ok=True)
+# Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+# Set up templates
+templates = Jinja2Templates(directory="templates")
+
+# Define data model
 class FinancialData(BaseModel):
     income: float
     expenses: Dict[str, float]
@@ -45,48 +29,53 @@ async def get_form(request: Request):
 @app.get("/api-key-status")
 async def api_key_status():
     api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key or api_key == "your_openai_api_key_here":
-        return {"status": "missing", "message": "OpenAI API key is not set. Please set it in your .env file."}
-    return {"status": "ok", "message": "OpenAI API key is set."}
+    if not api_key:
+        return {"status": "missing"}
+    return {"status": "available"}
 
 @app.post("/analyze")
 async def analyze_finances(data: FinancialData):
     try:
-        # Check if API key is set
+        # Check for API key
         api_key = os.getenv("OPENAI_API_KEY")
-        if not api_key or api_key == "your_openai_api_key_here":
-            return JSONResponse(
-                status_code=400,
-                content={
-                    "success": False,
-                    "error": "OpenAI API key is not set. Please set it in your .env file."
-                }
-            )
+        if not api_key:
+            return {"success": False, "error": "OpenAI API key is not set"}
         
-        # Import here to avoid loading the module if API key is not set
-        from financial_advisor_app import financial_crew
+        # Initialize OpenAI client
+        client = openai.OpenAI(api_key=api_key)
         
-        # Convert the Pydantic model to a dictionary
-        user_financial_data = data.dict()
+        # Format the financial data
+        financial_info = f"""
+        Monthly Income: ${data.income}
+        Monthly Expenses: Rent: ${data.expenses.get('rent', 0)}, Utilities: ${data.expenses.get('utilities', 0)}, 
+        Groceries: ${data.expenses.get('groceries', 0)}, Transportation: ${data.expenses.get('transportation', 0)}, 
+        Entertainment: ${data.expenses.get('entertainment', 0)}, Other: ${data.expenses.get('other', 0)}
+        Debts: Credit Card: ${data.debts.get('credit_card', {}).get('balance', 0)} at {data.debts.get('credit_card', {}).get('interest_rate', 0) * 100}%, 
+        Student Loan: ${data.debts.get('student_loan', {}).get('balance', 0)} at {data.debts.get('student_loan', {}).get('interest_rate', 0) * 100}%
+        Monthly Savings Goal: ${data.savings_goal}
+        """
         
-        # Process the data using the financial crew
-        result = financial_crew.kickoff(inputs=user_financial_data)
+        # Create the prompt
+        prompt = f"""
+        As a financial advisor, analyze this data and provide a budget plan with actual values (no placeholders):
+        {financial_info}
+        Include: 1) Expense breakdown with percentages 2) Optimization recommendations 
+        3) Savings plan 4) Debt advice 5) Investment tips 6) Actionable steps
+        """
         
-        # Ensure result is a string
-        if not isinstance(result, str):
-            result = str(result)
-            
-        return {"success": True, "result": result}
-    except Exception as e:
-        error_details = traceback.format_exc()
-        print(f"Error in analyze_finances: {str(e)}\n{error_details}")
-        return JSONResponse(
-            status_code=500,
-            content={
-                "success": False,
-                "error": str(e)
-            }
+        # Call the OpenAI API
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a financial advisor. Use actual numerical values, never placeholders like '$X'."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.7,
+            max_tokens=1000
         )
-
-if __name__ == "__main__":
-    uvicorn.run("api:app", host="0.0.0.0", port=8000, reload=True) 
+        
+        # Return the analysis
+        return {"success": True, "result": response.choices[0].message.content}
+    
+    except Exception as e:
+        return {"success": False, "error": str(e)} 

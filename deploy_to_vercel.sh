@@ -18,14 +18,32 @@ echo "Using optimized files for Vercel deployment..."
 cp vercel_api.py api.py
 cp vercel_requirements.txt requirements.txt
 
+# Create a .vercelignore file to exclude unnecessary files
+echo "Creating .vercelignore file..."
+cat > .vercelignore << EOL
+__pycache__
+*.pyc
+.env
+.git
+.github
+.gitignore
+.venv
+env
+venv
+*.backup
+*.log
+*.md
+tests
+EOL
+
 # Commit changes to git if git is available
 if command -v git &> /dev/null && [ -d .git ]; then
     echo "Committing changes to git..."
-    git add api.py requirements.txt
+    git add api.py requirements.txt .vercelignore
     git commit -m "Prepare for Vercel deployment" --no-verify || true
 fi
 
-# Deploy to Vercel
+# Deploy to Vercel with production flag and without uploading source files
 echo "Deploying to Vercel..."
 vercel --prod
 
