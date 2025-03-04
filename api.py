@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
@@ -39,7 +39,7 @@ async def analyze_finances(data: FinancialData):
         # Check for API key
         api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
-            return {"success": False, "error": "OpenAI API key is not set"}
+            return JSONResponse(content={"success": False, "error": "OpenAI API key is not set"})
         
         # Initialize OpenAI client
         client = openai.OpenAI(api_key=api_key)
@@ -75,7 +75,7 @@ async def analyze_finances(data: FinancialData):
         )
         
         # Return the analysis
-        return {"success": True, "result": response.choices[0].message.content}
+        return JSONResponse(content={"success": True, "result": response.choices[0].message.content})
     
     except Exception as e:
-        return {"success": False, "error": str(e)} 
+        return JSONResponse(content={"success": False, "error": str(e)}) 

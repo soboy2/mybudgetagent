@@ -8,19 +8,18 @@ if ! command -v vercel &> /dev/null; then
     npm install -g vercel
 fi
 
-# Backup original files
-echo "Backing up original files..."
-cp api.py api.py.backup
-cp requirements.txt requirements.txt.backup
-
-# Use optimized files for Vercel
-echo "Using optimized files for Vercel deployment..."
-cp vercel_api.py api.py
-cp vercel_requirements.txt requirements.txt
+# Create a clean deployment directory
+echo "Creating clean deployment directory..."
+mkdir -p vercel_deploy
+cp -r templates vercel_deploy/
+cp -r static vercel_deploy/
+cp vercel.json vercel_deploy/
+cp vercel_api.py vercel_deploy/api.py
+cp vercel_requirements.txt vercel_deploy/requirements.txt
 
 # Create a .vercelignore file to exclude unnecessary files
 echo "Creating .vercelignore file..."
-cat > .vercelignore << EOL
+cat > vercel_deploy/.vercelignore << EOL
 __pycache__
 *.pyc
 .env
@@ -34,29 +33,21 @@ venv
 *.log
 *.md
 tests
+node_modules
 EOL
 
-# Commit changes to git if git is available
-if command -v git &> /dev/null && [ -d .git ]; then
-    echo "Committing changes to git..."
-    git add api.py requirements.txt .vercelignore
-    git commit -m "Prepare for Vercel deployment" --no-verify || true
-fi
+# Change to the deployment directory
+cd vercel_deploy
 
-# Deploy to Vercel with production flag and without uploading source files
+# Deploy to Vercel with production flag
 echo "Deploying to Vercel..."
 vercel --prod
 
-# Restore original files
-echo "Restoring original files..."
-mv api.py.backup api.py
-mv requirements.txt.backup requirements.txt
+# Return to the original directory
+cd ..
 
-# Commit restoration if git is available
-if command -v git &> /dev/null && [ -d .git ]; then
-    echo "Committing restoration to git..."
-    git add api.py requirements.txt
-    git commit -m "Restore after Vercel deployment" --no-verify || true
-fi
+# Clean up
+echo "Cleaning up..."
+rm -rf vercel_deploy
 
 echo "Deployment complete! Don't forget to set your OPENAI_API_KEY in the Vercel dashboard." 

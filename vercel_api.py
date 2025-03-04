@@ -2,21 +2,12 @@ from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Dict
 import os
 import openai
 
 app = FastAPI()
-
-# Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -39,8 +30,8 @@ async def get_form(request: Request):
 async def api_key_status():
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
-        return {"status": "missing"}
-    return {"status": "available"}
+        return JSONResponse(content={"status": "missing"})
+    return JSONResponse(content={"status": "available"})
 
 @app.post("/analyze")
 async def analyze_finances(data: FinancialData):
@@ -48,7 +39,7 @@ async def analyze_finances(data: FinancialData):
         # Check for API key
         api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
-            return {"success": False, "error": "OpenAI API key is not set"}
+            return JSONResponse(content={"success": False, "error": "OpenAI API key is not set"})
         
         # Initialize OpenAI client
         client = openai.OpenAI(api_key=api_key)
@@ -84,7 +75,7 @@ async def analyze_finances(data: FinancialData):
         )
         
         # Return the analysis
-        return {"success": True, "result": response.choices[0].message.content}
+        return JSONResponse(content={"success": True, "result": response.choices[0].message.content})
     
     except Exception as e:
-        return {"success": False, "error": str(e)} 
+        return JSONResponse(content={"success": False, "error": str(e)}) 
