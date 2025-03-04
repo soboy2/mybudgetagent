@@ -98,6 +98,10 @@ async def analyze_finances(data: FinancialData):
         5. Simple investment recommendations
         6. Specific actionable steps to improve financial health
         
+        IMPORTANT: Use the ACTUAL VALUES from the financial information provided. DO NOT use placeholders like "$X" in your response. Calculate all percentages and totals based on the actual income and expense values.
+        
+        For example, if the monthly income is $5000 and rent is $1500, say "Rent: $1500 (30% of income)" NOT "Rent: $X".
+        
         Format your response in a clear, organized manner with headings and bullet points where appropriate.
         """
         
@@ -105,7 +109,7 @@ async def analyze_finances(data: FinancialData):
         response = client.chat.completions.create(
             model="gpt-4",
             messages=[
-                {"role": "system", "content": "You are a financial advisor AI assistant."},
+                {"role": "system", "content": "You are a financial advisor AI assistant. Always use actual numerical values in your analysis, never placeholders like '$X'."},
                 {"role": "user", "content": prompt}
             ],
             temperature=0.7,

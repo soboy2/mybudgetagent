@@ -26,7 +26,10 @@ budgeting_advisor = Agent(
     backstory="""You are an experienced budgeting advisor with expertise in 
     personal finance management. You help people understand their spending patterns 
     and create sustainable budgets. You also provide advice on savings, debt management,
-    and investment strategies as part of a comprehensive financial plan.""",
+    and investment strategies as part of a comprehensive financial plan. 
+    
+    IMPORTANT: Always use actual numerical values in your analysis, never placeholders like '$X'.
+    Calculate all percentages and totals based on the actual income and expense values provided.""",
     verbose=True,
     allow_delegation=False,
     llm=openai
@@ -37,12 +40,17 @@ budget_analysis_task = Task(
     description="""Analyze the client's monthly income and expenses. 
     Create a detailed budget plan that includes essential expenses, 
     discretionary spending, and savings goals. Also provide basic advice on
-    debt management and investment strategies as part of a comprehensive financial plan.""",
+    debt management and investment strategies as part of a comprehensive financial plan.
+    
+    IMPORTANT: Use the ACTUAL VALUES from the financial information provided. DO NOT use placeholders like "$X" in your response.
+    Calculate all percentages and totals based on the actual income and expense values.
+    
+    For example, if the monthly income is $5000 and rent is $1500, say "Rent: $1500 (30% of income)" NOT "Rent: $X".""",
     agent=budgeting_advisor,
     expected_output="""A detailed budget analysis including:
-    - Breakdown of current expenses
+    - Breakdown of current expenses with actual dollar amounts and percentages
     - Recommendations for expense optimization
-    - Savings plan to meet the monthly savings goal
+    - Savings plan to meet the monthly savings goal with specific dollar amounts
     - Basic debt management advice
     - Simple investment recommendations
     - Specific actionable steps to improve financial health"""
