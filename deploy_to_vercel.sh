@@ -11,26 +11,12 @@ fi
 # Create a clean deployment directory
 echo "Creating clean deployment directory..."
 rm -rf vercel_deploy
-mkdir -p vercel_deploy/templates
-mkdir -p vercel_deploy/static
+mkdir -p vercel_deploy
 
 # Copy only the essential files
-cp -r templates/* vercel_deploy/templates/
-cp -r static/* vercel_deploy/static/
+cp api.py vercel_deploy/
+cp requirements.txt vercel_deploy/
 cp vercel.json vercel_deploy/
-cp vercel_api.py vercel_deploy/api.py
-cp vercel_requirements.txt vercel_deploy/requirements.txt
-
-# Create a .vercelignore file to exclude unnecessary files
-echo "Creating .vercelignore file..."
-cat > vercel_deploy/.vercelignore << EOL
-*
-!api.py
-!requirements.txt
-!vercel.json
-!templates/**
-!static/**
-EOL
 
 # Change to the deployment directory
 cd vercel_deploy

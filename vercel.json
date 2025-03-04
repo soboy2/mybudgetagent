@@ -6,25 +6,7 @@
       "use": "@vercel/python",
       "config": {
         "runtime": "python3.9",
-        "maxLambdaSize": "5mb",
-        "includeFiles": ["templates/**", "static/**"],
-        "excludeFiles": [
-          "**/*.pyc", 
-          "**/__pycache__/**", 
-          "**/.git/**", 
-          "**/.venv/**", 
-          "**/env/**", 
-          "**/.pytest_cache/**",
-          "**/node_modules/**",
-          "**/*.md",
-          "**/*.log",
-          "**/*.backup",
-          "**/*.json",
-          "**/*.sh",
-          "**/*.txt",
-          "!requirements.txt",
-          "!vercel.json"
-        ]
+        "maxLambdaSize": "1mb"
       }
     }
   ],
@@ -33,8 +15,5 @@
       "src": "/(.*)",
       "dest": "api.py"
     }
-  ],
-  "env": {
-    "PYTHONUNBUFFERED": "1"
-  }
+  ]
 } 
