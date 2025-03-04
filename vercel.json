@@ -3,7 +3,13 @@
   "builds": [
     {
       "src": "api.py",
-      "use": "@vercel/python"
+      "use": "@vercel/python",
+      "config": {
+        "runtime": "python3.9",
+        "maxLambdaSize": "15mb",
+        "includeFiles": ["templates/**", "static/**"],
+        "excludeFiles": ["**/*.pyc", "**/__pycache__/**"]
+      }
     }
   ],
   "routes": [
