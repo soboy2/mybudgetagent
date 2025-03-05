@@ -41,4 +41,12 @@ env/
 .Spotlight-V100
 .Trashes
 ehthumbs.db
-Thumbs.db 
+Thumbs.db
+
+# Next.js specific
+node_modules/
+.next/
+out/
+.vercel
+*.tsbuildinfo
+next-env.d.ts 
