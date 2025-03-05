@@ -77,4 +77,4 @@ MIT
 
 ## Acknowledgements
 
-- Powered by OpenAI's GPT-4 model 
+- Powered by OpenAI's GPT-4 model - **User-Friendly**: Simple and intuitive interface for easy navigation
